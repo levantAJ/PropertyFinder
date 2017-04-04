@@ -74,9 +74,20 @@ class SearchPage extends Component {
     }
   }
   onSearchTextChanged(event) {
-    console.log('onSearchTextChanged')
     this.setState({ searchString: event.nativeEvent.text })
-    console.log(this.state.searchString)
+  }
+  onLocationPressed(event) {
+    navigator.geolocation.getCurrentPosition( location => {
+      var search = location.coords.latitude + ', ' + location.coords.longitude
+      this.setState({ searchString: search })
+      var query = urlForQueryAndPage('centre_point', search, 1)
+      this.executeQuery(query)
+    },
+    error => {
+      this.setState({
+        message: 'There was a problem with obtaining your location: ' + error
+      })
+    })
   }
   executeQuery(query) {
     console.log(query)
@@ -101,6 +112,7 @@ class SearchPage extends Component {
         passProps: {listings: response.listings},
       })
     } else {
+      console.log(response.application_response_code)
       this.setState({
         message: 'Please try again',
       })
@@ -136,15 +148,18 @@ class SearchPage extends Component {
         </View>
 
         <View style={styles.flowRight}>
-          <TouchableHighlight style={styles.button} underlayColor='#99d9f4'>
-            <Text style={styles.buttonText}>Location</Text>
+          <TouchableHighlight
+            style={styles.button}
+            underlayColor='#99d9f4'
+            onPress={this.onLocationPressed.bind(this)}>
+              <Text style={styles.buttonText}>Location</Text>
           </TouchableHighlight>
         </View>
 
         <Image source={require('./Resources/Images/house.png')} style={styles.image}/>
 
         {spinner}
-        
+
         <Text style={styles.description} >{this.state.message}</Text>
       </View>
     )
